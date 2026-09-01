@@ -22,32 +22,35 @@ jobs:
           cp -r gdevelop_full/* .
           rm -rf gdevelop_full
 
-      - name: Configurar Node.js 20
+      - name: Configurar Node.js 18
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 18
 
       - name: Aplicar Rebranding NEXUS ENGINE y Modo Offline
         run: |
-          # 1. Inyectar Logo
           if [ -f "assets/nexus_logo.jpg" ]; then
             cp assets/nexus_logo.jpg newIDE/app/resources/GDicon.png 2>/dev/null || true
             cp assets/nexus_logo.jpg newIDE/app/public/favicon.ico 2>/dev/null || true
           fi
 
-          # 2. Reemplazar título de ventana y paquete
           sed -i 's/<title>.*<\/title>/<title>NEXUS ENGINE - 2D\/3D GAME ENGINE<\/title>/g' newIDE/app/public/index.html 2>/dev/null || true
           sed -i 's/"name": "gdevelop"/"name": "nexus-engine"/g' newIDE/app/package.json 2>/dev/null || true
 
-          # 3. Neutralizar telemetría externa
           find newIDE/app/src -type f -name "*Analytics*.js" -o -name "*Analytics*.ts" | while read -r file; do
             echo "export const sendMetric = () => {}; export default {};" > "$file"
           done
 
       - name: Instalar Dependencias y Compilar Web App
         run: |
-          npm --prefix GDJS install --legacy-peer-deps || true
+          npm --prefix GDJS install --legacy-peer-deps
           npm --prefix newIDE/app install --legacy-peer-deps
+          npm --prefix newIDE/app install react-refresh@^0.14.0 --legacy-peer-deps --save-dev
+
+          mkdir -p newIDE/app/node_modules/GDJS-for-web-app-only/
+          cp -r GDJS/Runtime newIDE/app/node_modules/GDJS-for-web-app-only/ || true
+          cp -r GDJS/GDJS/Runtime newIDE/app/node_modules/GDJS-for-web-app-only/ || true
+
           npm --prefix newIDE/app run build
 
       - name: Publicar Bundle Compilado en Rama dist
