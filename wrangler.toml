@@ -1,0 +1,11 @@
+name = "nexus-engine"
+compatibility_date = "2024-12-18"
+
+[env.production]
+vars = { NODE_VERSION = "18" }
+
+[pages]
+  repo = "crispragma2021/Nexus-Engine"
+  branch = "main"
+  build_command = "npm --prefix newIDE/app run build"
+  output_dir = "newIDE/app/build"

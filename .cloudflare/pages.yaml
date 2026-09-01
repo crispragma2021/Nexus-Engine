@@ -1,0 +1,9 @@
+project:
+  name: nexus-engine
+  production_branch: main
+  framework: create-react-app
+  build:
+    command: npm --prefix newIDE/app run build
+    output_dir: newIDE/app/build
+  environment:
+    - NODE_VERSION=18
