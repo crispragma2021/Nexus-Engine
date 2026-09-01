@@ -1,37 +1,32 @@
 name: Build and Deploy NEXUS ENGINE
-
 on:
   push:
     branches: [ main, master ]
   workflow_dispatch:
-
 permissions:
   contents: write
-
 jobs:
   build-nexus:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repositorio Propio
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Configurar Node.js 18
+        with:
+          submodules: false
+      - name: Setup Node.js 18
         uses: actions/setup-node@v4
         with:
           node-version: 18
-
-      - name: Instalar Dependencias
+      - name: Install Dependencies
         run: |
           npm --prefix newIDE/app install --legacy-peer-deps
           npm --prefix newIDE/app install react-refresh@^0.14.0 --legacy-peer-deps --save-dev
           mkdir -p newIDE/app/node_modules/GDJS-for-web-app-only/
           cp -r GDJS/Runtime newIDE/app/node_modules/GDJS-for-web-app-only/ || true
-
-      - name: Compilar Web App
+      - name: Build
         run: |
           npm --prefix newIDE/app run build
-
-      - name: Publicar en Rama dist
+      - name: Deploy to dist
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
