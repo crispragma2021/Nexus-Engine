@@ -1,0 +1,59 @@
+name: Build and Deploy NEXUS ENGINE
+
+on:
+  push:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-nexus:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repositorio Propio
+        uses: actions/checkout@v4
+
+      - name: Clonar Código Base de GDevelop
+        run: |
+          git clone --depth 1 https://github.com/4ian/GDevelop.git gdevelop-src
+          cp -r gdevelop-src/newIDE .
+          rm -rf gdevelop-src
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: newIDE/app/package-lock.json
+
+      - name: Aplicar Rebranding NEXUS ENGINE y Aislamiento Offline
+        run: |
+          # 1. Inyectar logo si existe
+          if [ -f "assets/nexus_logo.jpg" ]; then
+            cp assets/nexus_logo.jpg newIDE/app/resources/GDicon.png 2>/dev/null || true
+            cp assets/nexus_logo.jpg newIDE/app/public/favicon.ico 2>/dev/null || true
+          fi
+
+          # 2. Actualizar título y metadatos
+          sed -i 's/<title>.*<\/title>/<title>NEXUS ENGINE - 2D\/3D GAME ENGINE<\/title>/g' newIDE/app/public/index.html 2>/dev/null || true
+          sed -i 's/"name": "gdevelop"/"name": "nexus-engine"/g' newIDE/app/package.json
+
+          # 3. Neutralizar telemetría externa
+          find newIDE/app/src -type f -name "*Analytics*.js" -o -name "*Analytics*.ts" | while read -r file; do
+            echo "export const sendMetric = () => {}; export default {};" > "$file"
+          done
+
+      - name: Instalar Dependencias y Compilar
+        run: |
+          npm --prefix newIDE/app install --legacy-peer-deps
+          npm --prefix newIDE/app run build
+
+      - name: Publicar Bundle en Rama dist
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./newIDE/app/build
+          publish_branch: dist

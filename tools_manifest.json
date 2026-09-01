@@ -1,0 +1,342 @@
+{
+  "tools": [
+    {
+      "name": "nexus_rag_query",
+      "description": "Consulta la base de conocimiento técnico y arquitectura en Cloudflare Vectorize.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Consulta técnica o concepto."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "command": "./nexus_query.sh \"{query}\""
+    },
+    {
+      "name": "nexus_rag_ingest",
+      "description": "Indexa nuevo conocimiento técnico o decisiones de arquitectura en Cloudflare Vectorize.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Texto técnico a indexar."
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "command": "./cf_vector_rag.sh \"{text}\""
+    },
+    {
+      "name": "web_browse",
+      "description": "Navega por la web y extrae documentación técnica en formato Markdown limpio optimizado para LLMs.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL completa a consultar."
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "command": "./nexus_browse.sh \"{url}\""
+    },
+    {
+      "name": "search_codebase",
+      "description": "Busca ocurrencias de texto, tipos o funciones en todos los archivos del proyecto.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "Texto o regex a buscar."
+          }
+        },
+        "required": [
+          "pattern"
+        ]
+      },
+      "command": "grep -rn --exclude-dir=target --exclude-dir=.git \"{pattern}\" ."
+    },
+    {
+      "name": "read_file",
+      "description": "Lee el contenido de un archivo.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Ruta del archivo."
+          }
+        },
+        "required": [
+          "path"
+        ]
+      },
+      "command": "cat \"{path}\""
+    },
+    {
+      "name": "find_files",
+      "description": "Busca archivos por patrón glob sin incluir carpetas temporales.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "Patrón de búsqueda (ej. *.rs)."
+          }
+        },
+        "required": [
+          "pattern"
+        ]
+      },
+      "command": "find . -type f -name \"{pattern}\" ! -path \"*/target/*\" ! -path \"*/.git/*\""
+    },
+    {
+      "name": "replace_in_file",
+      "description": "Reemplazo quirúrgico de un bloque exacto dentro de un archivo sin sobreescribirlo por completo.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Ruta del archivo."
+          },
+          "old_str": {
+            "type": "string",
+            "description": "Texto exacto a reemplazar."
+          },
+          "new_str": {
+            "type": "string",
+            "description": "Nuevo texto a insertar."
+          }
+        },
+        "required": [
+          "path",
+          "old_str",
+          "new_str"
+        ]
+      },
+      "command": "./nexus_edit.sh \"{path}\" \"{old_str}\" \"{new_str}\""
+    },
+    {
+      "name": "create_or_update_file",
+      "description": "Crea o sobreescribe un archivo completo en el proyecto.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Ruta del archivo."
+          },
+          "content": {
+            "type": "string",
+            "description": "Contenido completo."
+          }
+        },
+        "required": [
+          "path",
+          "content"
+        ]
+      },
+      "command": "mkdir -p $(dirname \"{path}\") && cat << 'EOF' > \"{path}\"\n{content}\nEOF"
+    },
+    {
+      "name": "cargo_check",
+      "description": "Verifica compilación de Rust con salida truncada segura.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      },
+      "command": "./nexus_exec_safe.sh cargo check"
+    },
+    {
+      "name": "cargo_test",
+      "description": "Ejecuta los tests de Rust con salida truncada segura.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      },
+      "command": "./nexus_exec_safe.sh cargo test"
+    },
+    {
+      "name": "run_in_sandbox",
+      "description": "Ejecuta una tarea en una rama aislada con auto-reversión ante cualquier error.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "task_name": {
+            "type": "string",
+            "description": "Nombre de la sub-tarea o módulo a probar."
+          }
+        },
+        "required": [
+          "task_name"
+        ]
+      },
+      "command": "./nexus_sandbox_runner.sh \"{task_name}\""
+    },
+    {
+      "name": "auto_generate_skill",
+      "description": "Crea una nueva habilidad y script ejecutable reutilizable.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "skill_name": {
+            "type": "string",
+            "description": "Nombre de la skill."
+          },
+          "documentation": {
+            "type": "string",
+            "description": "Guía en Markdown."
+          },
+          "executable_script": {
+            "type": "string",
+            "description": "Código Bash ejecutable."
+          }
+        },
+        "required": [
+          "skill_name",
+          "documentation",
+          "executable_script"
+        ]
+      },
+      "command": "./nexus_skill_engine.sh create \"{skill_name}\" \"{documentation}\" \"{executable_script}\""
+    },
+    {
+      "name": "run_skill",
+      "description": "Ejecuta una skill guardada previamente.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "skill_name": {
+            "type": "string",
+            "description": "Nombre de la skill."
+          },
+          "args": {
+            "type": "string",
+            "description": "Argumentos opcionales."
+          }
+        },
+        "required": [
+          "skill_name"
+        ]
+      },
+      "command": "./nexus_skill_engine.sh run \"{skill_name}\" {args}"
+    },
+    {
+      "name": "scratchpad",
+      "description": "Lee o actualiza el estado y metas de la sesión activa.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "read",
+              "update"
+            ],
+            "description": "Acción a realizar."
+          },
+          "goal": {
+            "type": "string",
+            "description": "Meta principal (si se actualiza)."
+          },
+          "task": {
+            "type": "string",
+            "description": "Subtarea actual (si se actualiza)."
+          }
+        },
+        "required": [
+          "action"
+        ]
+      },
+      "command": "./nexus_scratchpad.sh {action} \"{goal}\" \"{task}\""
+    },
+    {
+      "name": "git_commit_and_push",
+      "description": "Añade cambios validados, crea un commit formal y lo sincroniza con GitHub.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Mensaje formal del commit."
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "command": "git add -A && git commit -m \"{message}\" && git push"
+    },
+    {
+      "name": "search_web",
+      "description": "Realiza búsquedas autónomas en la web para descubrir librerías, documentación o soluciones a problemas técnicos.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Términos de búsqueda."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "command": "./nexus_search.sh \"{query}\""
+    },
+    {
+      "name": "http_request",
+      "description": "Envía solicitudes HTTP arbitrarias (GET, POST, etc.) a cualquier API o servicio en la red.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "GET",
+              "POST",
+              "PUT",
+              "DELETE"
+            ],
+            "description": "Método HTTP."
+          },
+          "url": {
+            "type": "string",
+            "description": "URL de destino."
+          },
+          "data": {
+            "type": "string",
+            "description": "Payload JSON opcional para métodos POST/PUT."
+          }
+        },
+        "required": [
+          "method",
+          "url"
+        ]
+      },
+      "command": "./nexus_http.sh \"{method}\" \"{url}\" \"{data}\""
+    },
+    {
+      "name": "system_diagnostics",
+      "description": "Consulta el estado actual de RAM, almacenamiento en disco y batería del dispositivo antes de tareas pesadas.",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      },
+      "command": "./nexus_sysinfo.sh"
+    }
+  ]
+}
