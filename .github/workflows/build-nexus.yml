@@ -12,14 +12,8 @@ jobs:
   build-nexus:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repositorio Propio
+      - name: Checkout Repositorio (ya es clon de GDevelop)
         uses: actions/checkout@v4
-
-      - name: Clonar Código Fuente Completo de GDevelop 5
-        run: |
-          git clone --depth 1 https://github.com/4ian/GDevelop.git gdevelop_full
-          cp -r gdevelop_full/newIDE gdevelop_full/GDJS gdevelop_full/Extensions ./
-          rm -rf gdevelop_full
 
       - name: Configurar Node.js 18
         uses: actions/setup-node@v4
@@ -30,6 +24,7 @@ jobs:
         run: |
           if [ -f "assets/nexus_logo.jpg" ]; then
             cp assets/nexus_logo.jpg newIDE/app/resources/GDicon.png 2>/dev/null || true
+            cp assets/nexus_logo.jpg newIDE/app/public/favicon.ico 2>/dev/null || true
           fi
           sed -i 's/<title>.*<\/title>/<title>NEXUS ENGINE - 2D\/3D GAME ENGINE<\/title>/g' newIDE/app/public/index.html 2>/dev/null || true
           sed -i 's/"name": "gdevelop"/"name": "nexus-engine"/g' newIDE/app/package.json 2>/dev/null || true
