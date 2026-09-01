@@ -1,12 +1,33 @@
 #!/usr/bin/env bash
 set -e
 
-cd "$HOME/GDevelop_Engine"
+cd "$HOME"
 
-echo "=== 1. FUSIONANDO UPSTREAM/MASTER ==="
-git merge upstream/master --allow-unrelated-histories -m "feat: importar código fuente completo de GDevelop 5" || true
+echo "=== 1. LOCALIZANDO CARPETA OFICIAL ==="
+OFFICIAL_DIR=""
+if [ -d "$HOME/GDevelop-master/newIDE" ]; then
+  OFFICIAL_DIR="$HOME/GDevelop-master"
+elif [ -d "$HOME/GDevelop/newIDE" ]; then
+  OFFICIAL_DIR="$HOME/GDevelop"
+elif [ -d "$HOME/GDevelop_Engine/newIDE" ]; then
+  OFFICIAL_DIR="$HOME/GDevelop_Engine"
+fi
 
-echo "=== 2. INYECTANDO ASSETS Y BRANDING ==="
+if [ -z "$OFFICIAL_DIR" ]; then
+  echo "❌ Error: No se encontró la carpeta oficial con newIDE."
+  exit 1
+fi
+
+echo "✓ Trabajando sobre: $OFFICIAL_DIR"
+cd "$OFFICIAL_DIR"
+
+echo "=== 2. CONFIGURANDO VÍNCULO A GITHUB ==="
+git remote remove origin 2>/dev/null || true
+git remote add origin https://github.com/crispragma2021/Nexus-Engine.git
+git config user.name "crispragma2021"
+git config user.email "Crispragma2021@gmail.com"
+
+echo "=== 3. INYECTANDO TU MARCA ==="
 mkdir -p assets .github/workflows
 if [ -f "/sdcard/DCIM/Creative/IMG_20260828_190920.jpg" ]; then
   cp "/sdcard/DCIM/Creative/IMG_20260828_190920.jpg" assets/nexus_logo.jpg
@@ -21,7 +42,7 @@ find newIDE/app/src -type f \( -name "*Analytics*.js" -o -name "*Analytics*.ts" 
   echo "export const sendMetric = () => {}; export default {};" > "$file"
 done
 
-echo "=== 3. CONFIGURANDO WORKFLOW ==="
+echo "=== 4. CONFIGURANDO WORKFLOW ==="
 cat << 'WORKFLOW' > .github/workflows/build-nexus.yml
 name: Build and Deploy NEXUS ENGINE
 
@@ -64,10 +85,10 @@ jobs:
           publish_branch: dist
 WORKFLOW
 
-echo "=== 4. SUBIENDO TODO A GITHUB ==="
+echo "=== 5. SUBIENDO A GITHUB ==="
 git branch -M main
 git add .
-git commit -m "feat: complete gdevelop base with nexus branding and build workflow" || true
+git commit -m "feat: base oficial de gdevelop 5 adaptada a nexus engine" || true
 git push origin main --force
 
-echo "✓ Código fusionado y subido a GitHub."
+echo "✓ Repositorio oficial sincronizado y subido a GitHub sin eliminar archivos locales."
