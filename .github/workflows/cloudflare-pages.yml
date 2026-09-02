@@ -1,0 +1,42 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: |
+          npm --prefix newIDE/app install --legacy-peer-deps
+          npm --prefix newIDE/app install react-refresh@^0.14.0 --legacy-peer-deps --save-dev
+          mkdir -p newIDE/app/node_modules/GDJS-for-web-app-only/
+          cp -r GDJS/Runtime newIDE/app/node_modules/GDJS-for-web-app-only/ || true
+
+      - name: Build
+        run: |
+          npm --prefix newIDE/app run build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: nexus-engine
+          directory: newIDE/app/build
+          branch: main
