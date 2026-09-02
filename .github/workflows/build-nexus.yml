@@ -29,7 +29,7 @@ jobs:
 
       - name: Build
         run: |
-          export NODE_OPTIONS="--max-old-space-size=4096"
+          export NODE_OPTIONS="--max-old-space-size=6144"
           npm --prefix newIDE/app run build
 
       - name: Deploy to GitHub Pages
